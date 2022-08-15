@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static  %}
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'style/home.css' %}">
+</head>
+<body>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div class="up">
+            <input required name="url" type="text" placeholder="Add The Link here.">
+            <button type="submit"><img src="{% static 'images/add.png' %}" alt=""></button>
+        </div>
+    </form>
+
+
+
+    <!-- if there is no links -->
+
+
+
+    <div class="links">
+
+        <div class="in">
+            <input id="vieworclose" type="text" placeholder="Choose link" readonly>
+            <button id="copy"><img src="static/images/copy.png" alt=""></button>
+        </div>
+
+
+        <div class="users">
+            <img src="static/images/visitors.png" alt="">
+            <p>0</p>
+        </div>
+
+        <div class="view-user-links">
+ 
+        </div>
+        
+    </div>
+
+
+
+
+
+
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script>
+
+        
+        $.ajax({
+            url:"{% url 'details' %}",
+            method:"GET",
+            success:function(data){
+                if (data.length > 0){
+                    var links = document.querySelector('.view-user-links')
+                    for (var i=0;i<data.length;i++){
+                        links.innerHTML += `<span>${data[i]['link']}</span>`
+                    }
+                    links.innerHTML += `<hr>
+                    <button id="vieworclose">close</button>`;
+                    document.querySelectorAll('#vieworclose').forEach(item =>{
+                        item.addEventListener('click',function(){
+                            document.querySelector('.view-user-links').classList.toggle('view')
+                        })
+                    })
+                    document.querySelectorAll('.view-user-links span').forEach(link=>{
+                        link.addEventListener('click',function(){
+                            document.querySelector('.view-user-links').classList.toggle('view')
+                            
+                            $.ajax({
+                                url:"{% url 'getCode' %}",
+                                method:"GET",
+                                data:{
+                                    'link':this.textContent
+                                },success:function(code){
+                                    link_input.value = `${window.location.protocol}://${window.location.host}/${code[0]['hash_code']}`;
+                                    document.querySelector('.users p').textContent = code[0]['visitors']
+                                }
+                            })
+                        })
+                    })
+            
+            
+                }else {
+                    document.querySelector('.links').remove()
+                    document.querySelector('body').innerHTML += `    <div class="not-found">
+                        <img src="static/images/nolinks.png" alt="">
+                        <p>No Links Found</p>
+                    </div>`;
+                }
+
+
+            }
+        })
+
+
+
+
+
+
+
+
+        var link_input = document.querySelector('.in input')
+    
+    
+ 
+
+
+        document.querySelector('#copy').addEventListener('click',function(){
+            document.querySelector('.in input').select()
+            document.execCommand('copy')
+            alert('copied to clipboard')
+        })
+    
+    </script>
+</body>
+</html>
